@@ -34,7 +34,7 @@ Run-CodexRTL.cmd
 The launcher will:
 
 - check that Node.js/npm are installed
-- run `npm install` the first time
+- run `npm ci --ignore-scripts` the first time
 - start Codex Desktop with a localhost-only DevTools port
 - inject the RTL fix
 
@@ -45,7 +45,7 @@ If Codex is already open, close it first and run `Run-CodexRTL.cmd` again.
 Install dependencies:
 
 ```powershell
-npm install
+npm ci --ignore-scripts
 ```
 
 Close Codex Desktop, then start it with a local debugging port:

@@ -36,7 +36,7 @@ if (-not $npm) {
 
 if (-not (Test-Path (Join-Path $root "node_modules\ws"))) {
   Info "Installing dependencies. This only runs the first time..."
-  npm.cmd install
+  npm.cmd ci --ignore-scripts
 }
 
 Info "Starting Codex Desktop with localhost-only DevTools..."
