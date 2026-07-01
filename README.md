@@ -6,7 +6,7 @@ Fix mixed Arabic/English text in Codex Desktop while keeping code left-to-right.
 
 **Download, extract, and double-click `Run-CodexRTL.cmd`.**
 
-1. Download [`codex-rtl-toolkit-v0.1.3.zip`](https://github.com/pawnsmaster/codex-rtl-toolkit/releases/latest).
+1. Download [`codex-rtl-toolkit-v0.1.4.zip`](https://github.com/pawnsmaster/codex-rtl-toolkit/releases/latest).
 2. Extract the ZIP.
 3. Save any unfinished input in Codex.
 4. Double-click `Run-CodexRTL.cmd`.
@@ -31,8 +31,9 @@ Requirements: Windows, Node.js 20+, and Codex Desktop.
 - runs `npm ci --ignore-scripts` on the first launch
 - starts Codex with a DevTools port bound only to `127.0.0.1`
 - injects the local RTL rendering fix
+- checks GitHub Releases at most once every 24 hours and prints a link when an update is available
 
-It does not change your messages, account data, or Codex installation files.
+It does not download updates automatically or change your messages, account data, or Codex installation files.
 
 ## Manual Start
 

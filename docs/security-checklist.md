@@ -8,6 +8,8 @@ Use this checklist before publishing a release.
 - [ ] `desktop/inject.mjs` refuses non-local `webSocketDebuggerUrl` hosts.
 - [ ] The DevTools port is not exposed through a firewall rule, tunnel, proxy, or shared machine.
 - [ ] Dependency install uses `npm ci --ignore-scripts`.
+- [ ] Update checks read public GitHub release metadata only and never download or execute updates.
+- [ ] Update-check failures cannot interrupt the launcher.
 - [ ] PowerShell scripts parse successfully with `npm run check`.
 
 ## Browser Extension
@@ -23,7 +25,7 @@ Use this checklist before publishing a release.
 - [ ] `package-lock.json` is committed.
 - [ ] `npm audit --audit-level=moderate` reports zero vulnerabilities.
 - [ ] `npm run check` passes.
-- [ ] Generated release ZIPs do not include `.tools`, GitHub auth config, or `node_modules`.
+- [ ] Generated release ZIPs do not include `.tools`, `.cache`, GitHub auth config, or `node_modules`.
 
 ## Release Notes
 

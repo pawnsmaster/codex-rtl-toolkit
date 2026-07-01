@@ -1,6 +1,6 @@
 {
   "name": "codex-rtl-toolkit",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Local RTL rendering fixes for Arabic/English Codex conversations.",
   "type": "module",
   "scripts": {

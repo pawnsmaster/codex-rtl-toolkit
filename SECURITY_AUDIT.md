@@ -52,7 +52,7 @@ Overall risk assessment: acceptable for a small local-rendering utility after do
 | Entry Point | Type | Auth Required | Threats Identified |
 | ----------- | ---- | ------------- | ------------------ |
 | `Run-CodexRTL.cmd` | local user launcher | Windows user session | Executes bundled PowerShell script |
-| `desktop/Run-CodexRTL.ps1` | local script | Windows user session | Installs dependencies and launches Codex |
+| `desktop/Run-CodexRTL.ps1` | local script | Windows user session | Installs dependencies, launches Codex, and checks public GitHub release metadata |
 | `desktop/Launch-CodexRTL.ps1` | local script | Windows user session | Opens localhost-only DevTools |
 | `desktop/inject.mjs` | local Node script | localhost DevTools access | Runtime evaluation into renderer |
 | `extension/injected.js` | browser content script | Chrome extension install | DOM/CSS mutation on matched ChatGPT pages |
@@ -78,6 +78,10 @@ Overall risk assessment: acceptable for a small local-rendering utility after do
 ## Browser Extension Assessment
 
 The extension uses Manifest V3, has no declared permissions, no host permissions, no background worker, no storage, no message handlers, and no network access. Its content script matches are limited to ChatGPT domains and inject local CSS/JS assets only.
+
+## Update Check Assessment
+
+The desktop launcher performs a best-effort `GET` request to the repository's public GitHub Releases API at most once every 24 hours, after Codex has started successfully. It uses no token, sends no conversation data, downloads no executable content, and stores only the check timestamp and latest public tag in the ignored `.cache` directory. Network and cache errors are caught so the update check cannot stop the launcher.
 
 ## Remediation Priority
 

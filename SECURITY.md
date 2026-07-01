@@ -16,6 +16,8 @@ The launcher binds DevTools to localhost only:
 
 The injector also refuses non-local WebSocket targets. Do not expose the debugging port to a network interface, reverse proxy, tunnel, or shared machine.
 
+After a successful launch, the toolkit checks the repository's public GitHub Releases API at most once every 24 hours. It sends no conversation data, downloads no update automatically, and ignores network failures. The last check time and release tag are stored locally in `.cache/update-check.json`.
+
 ## Safe Usage
 
 - Run the launcher only on your own machine.

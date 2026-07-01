@@ -1,4 +1,5 @@
 node_modules/
 .tools/
+.cache/
 .DS_Store
 *.log
