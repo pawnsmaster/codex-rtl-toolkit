@@ -10,6 +10,21 @@ function Info($message) {
   Write-Host $message -ForegroundColor Cyan
 }
 
+function Get-DesktopAppProcesses {
+  $chatGPTProcesses = @(Get-Process -Name ChatGPT -ErrorAction SilentlyContinue)
+  $legacyCodexProcesses = @(
+    Get-Process -Name Codex -ErrorAction SilentlyContinue |
+      Where-Object {
+        if ($_.Path) {
+          return $_.Path -notmatch '\\resources\\codex\.exe$'
+        }
+        return $_.MainWindowHandle -ne 0
+      }
+  )
+
+  return @($chatGPTProcesses) + @($legacyCodexProcesses)
+}
+
 function CheckForUpdate($root) {
   try {
     $package = Get-Content (Join-Path $root "package.json") -Raw | ConvertFrom-Json
@@ -64,14 +79,25 @@ Set-Location $root
 
 Info "Codex RTL Toolkit"
 Write-Host ""
-$running = Get-Process -Name Codex -ErrorAction SilentlyContinue
+$running = @(Get-DesktopAppProcesses)
 if ($running) {
-  Write-Host "Codex is running. Closing it before enabling the RTL fix..." -ForegroundColor Yellow
+  $runningPath = $running |
+    Where-Object { $_.Path -and (Test-Path $_.Path) } |
+    Select-Object -First 1 -ExpandProperty Path
+  if ($runningPath) {
+    $env:CODEX_RTL_EXE_PATH = $runningPath
+    $cacheDirectory = Join-Path $root ".cache"
+    New-Item -ItemType Directory -Force -Path $cacheDirectory | Out-Null
+    Set-Content -Path (Join-Path $cacheDirectory "app-path.txt") -Value $runningPath -Encoding UTF8
+  }
+
+  Write-Host "Codex/ChatGPT is running. Closing it before enabling the RTL fix..." -ForegroundColor Yellow
   $running | Stop-Process -Force
   Start-Sleep -Seconds 1
 
-  if (Get-Process -Name Codex -ErrorAction SilentlyContinue) {
-    Fail "Codex could not be closed. End its processes in Task Manager, then try again."
+  $stillRunning = @(Get-DesktopAppProcesses)
+  if ($stillRunning) {
+    Fail "Codex/ChatGPT could not be closed. End its processes in Task Manager, then try again."
   }
 }
 
@@ -90,14 +116,17 @@ if (-not (Test-Path (Join-Path $root "node_modules\ws"))) {
   npm.cmd ci --ignore-scripts
 }
 
-Info "Starting Codex Desktop with localhost-only DevTools..."
+Info "Starting Codex/ChatGPT Desktop with localhost-only DevTools..."
 & (Join-Path $PSScriptRoot "Launch-CodexRTL.ps1")
 
-Info "Waiting for Codex to open..."
+Info "Waiting for Codex/ChatGPT to open..."
 Start-Sleep -Seconds 5
 
 Info "Injecting RTL fix..."
 npm.cmd run inject
+if ($LASTEXITCODE -ne 0) {
+  Fail "The RTL fix could not connect to Codex/ChatGPT. Run Run-CodexRTL.cmd again and send the full error if it repeats."
+}
 
 Write-Host ""
 Write-Host "Done. Keep this Codex window open and use it normally." -ForegroundColor Green

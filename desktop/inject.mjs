@@ -44,9 +44,36 @@ function isLikelyCodexTarget(target) {
   const haystack = `${target.title || ""} ${target.url || ""}`.toLowerCase();
   return target.webSocketDebuggerUrl && (
     haystack.includes("codex") ||
+    haystack.includes("chatgpt") ||
     haystack.includes("chatgpt.com") ||
     haystack.includes("app://")
   );
+}
+
+function delay(milliseconds) {
+  return new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
+}
+
+async function waitForCandidates(timeoutMilliseconds = 30000) {
+  const deadline = Date.now() + timeoutMilliseconds;
+  let lastError = new Error("No Codex/ChatGPT-like renderer target found yet.");
+
+  do {
+    try {
+      const targets = await getTargets();
+      const candidates = targets.filter(isLikelyCodexTarget);
+      if (candidates.length > 0) {
+        return candidates;
+      }
+      lastError = new Error("No Codex/ChatGPT-like renderer target found. Open a conversation and try again.");
+    } catch (error) {
+      lastError = error;
+    }
+
+    await delay(500);
+  } while (Date.now() < deadline);
+
+  throw lastError;
 }
 
 function assertLocalDevToolsUrl(wsUrl) {
@@ -97,12 +124,7 @@ function evaluate(wsUrl, expression) {
   });
 }
 
-const targets = await getTargets();
-const candidates = targets.filter(isLikelyCodexTarget);
-
-if (candidates.length === 0) {
-  throw new Error("No Codex-like renderer target found. Open a Codex conversation and try again.");
-}
+const candidates = await waitForCandidates();
 
 const expression = `
 (() => {

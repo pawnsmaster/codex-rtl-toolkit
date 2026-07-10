@@ -6,7 +6,7 @@ Codex RTL Toolkit changes local rendering only. It does not read, store, upload,
 
 ## Desktop Security Model
 
-The desktop workflow uses Chromium's DevTools Protocol because Codex Desktop does not expose a documented CSS-extension API.
+The desktop workflow uses Chromium's DevTools Protocol because Codex/ChatGPT Desktop does not expose a documented CSS-extension API.
 
 The launcher binds DevTools to localhost only:
 
@@ -21,7 +21,7 @@ After a successful launch, the toolkit checks the repository's public GitHub Rel
 ## Safe Usage
 
 - Run the launcher only on your own machine.
-- Close Codex when you no longer need the injected session.
+- Close Codex/ChatGPT Desktop when you no longer need the injected session.
 - Do not change `CODEX_RTL_PORT` to a privileged or externally exposed port.
 - Review changes before running scripts from forks.
 - Prefer official GitHub releases from this repository over copied scripts or modified ZIP files.
@@ -40,7 +40,7 @@ npm audit --audit-level=moderate
 
 Please open a GitHub issue with:
 
-- Operating system and Codex version
+- Operating system and app version
 - Whether you used Desktop or Browser Extension mode
 - A screenshot with sensitive content removed
 - Steps to reproduce

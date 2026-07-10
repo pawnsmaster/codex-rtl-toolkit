@@ -95,6 +95,32 @@
     }
   }
 
+  function codeLanguage(code) {
+    const classNames = [
+      code.getAttribute("class") || "",
+      code.closest("pre")?.getAttribute("class") || ""
+    ].join(" ");
+    const classMatch = classNames.match(/(?:language|lang)-([a-z0-9_-]+)/i);
+    if (classMatch?.[1]) return classMatch[1].toLowerCase();
+
+    const firstLine = (code.textContent || "").trimStart().split(/\r?\n/, 1)[0]?.trim();
+    return /^[a-z0-9_-]{1,24}$/i.test(firstLine || "") ? firstLine.toLowerCase() : "";
+  }
+
+  function applyTextCodeBlockDirection(code) {
+    const language = codeLanguage(code);
+    if (!["text", "txt", "plain", "plaintext", "md", "markdown"].includes(language)) return;
+    if (!ARABIC_RE.test(code.textContent || "")) return;
+
+    const pre = code.closest("pre");
+    code.dataset.codexTextBlock = "true";
+    code.dir = "rtl";
+    if (pre) {
+      pre.dataset.codexTextBlock = "true";
+      pre.dir = "rtl";
+    }
+  }
+
   function hasDirectText(el) {
     return Array.from(el.childNodes).some((node) => (
       node.nodeType === Node.TEXT_NODE && ARABIC_RE.test(node.textContent || "")
@@ -167,6 +193,8 @@
     });
     if (root.matches && root.matches("code")) applyMarkdownCodeDirection(root);
     root.querySelectorAll?.("code").forEach(applyMarkdownCodeDirection);
+    if (root.matches && root.matches("code")) applyTextCodeBlockDirection(root);
+    root.querySelectorAll?.("code").forEach(applyTextCodeBlockDirection);
     if (root.matches && root.matches(BLOCK_SELECTOR)) applyDirection(root);
     root.querySelectorAll?.(BLOCK_SELECTOR).forEach(applyDirection);
     if (root.matches && root.matches(TEXT_LEAF_SELECTOR)) applyTextLeafDirection(root);
@@ -197,12 +225,18 @@
 
   window.__CODEX_RTL_OBSERVER__ = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) scheduleScan(node);
+      if (mutation.type === "characterData") {
+        scheduleScan(mutation.target.parentElement);
+      }
+      for (const node of mutation.addedNodes) {
+        scheduleScan(node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
+      }
     }
   });
 
   window.__CODEX_RTL_OBSERVER__.observe(document.body, {
     childList: true,
+    characterData: true,
     subtree: true
   });
 

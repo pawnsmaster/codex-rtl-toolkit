@@ -77,6 +77,19 @@
   white-space: pre !important;
 }
 
+[data-codex-rtl-root="true"] pre[data-codex-text-block="true"],
+[data-codex-rtl-root="true"] pre[data-codex-text-block="true"] > code[data-codex-text-block="true"] {
+  direction: rtl !important;
+  text-align: right !important;
+  unicode-bidi: plaintext !important;
+  white-space: pre-wrap !important;
+}
+
+[data-codex-rtl-root="true"] pre[data-codex-text-block="true"] > code[data-codex-text-block="true"] {
+  display: block !important;
+  width: 100% !important;
+}
+
 [data-codex-rtl-root="true"] p,
 [data-codex-rtl-root="true"] li,
 [data-codex-rtl-root="true"] blockquote,
