@@ -1,6 +1,8 @@
-# Codex RTL Toolkit
+# Codex (ChatGPT Desktop) RTL Toolkit
 
-Fix mixed Arabic/English text in Codex/ChatGPT Desktop while keeping code left-to-right.
+Fix mixed Arabic/English text in Codex after the ChatGPT Desktop update while keeping code left-to-right.
+
+Codex Desktop is now shipped through the ChatGPT desktop app on some Windows installs. This toolkit targets that Codex/ChatGPT Desktop experience, not ordinary browser ChatGPT.
 
 ## Quick Start
 
@@ -8,12 +10,12 @@ Fix mixed Arabic/English text in Codex/ChatGPT Desktop while keeping code left-t
 
 1. Download [`codex-rtl-toolkit-v0.1.5.zip`](https://github.com/pawnsmaster/codex-rtl-toolkit/releases/latest).
 2. Extract the ZIP.
-3. Save any unfinished input in Codex.
+3. Save any unfinished input in Codex/ChatGPT Desktop.
 4. Double-click `Run-CodexRTL.cmd`.
 
-Codex/ChatGPT may remain active after its window is closed. The launcher safely closes any running desktop app processes, starts a fresh RTL-enabled session, and applies the fix automatically.
+Codex/ChatGPT Desktop may remain active after its window is closed. The launcher safely closes any running desktop app processes, starts a fresh RTL-enabled session, and applies the fix automatically.
 
-Requirements: Windows, Node.js 20+, and Codex/ChatGPT Desktop.
+Requirements: Windows, Node.js 20+, and Codex through ChatGPT Desktop.
 
 ## What It Fixes
 
@@ -29,7 +31,7 @@ Requirements: Windows, Node.js 20+, and Codex/ChatGPT Desktop.
 - closes running or background Codex/ChatGPT Desktop processes
 - checks that Node.js and npm are installed
 - runs `npm ci --ignore-scripts` on the first launch
-- starts Codex/ChatGPT Desktop with a DevTools port bound only to `127.0.0.1`
+- starts Codex through ChatGPT Desktop with a DevTools port bound only to `127.0.0.1`
 - injects the local RTL rendering fix
 - checks GitHub Releases at most once every 24 hours and prints a link when an update is available
 
@@ -76,7 +78,7 @@ This is a community workaround because the desktop app does not currently expose
 3. Click Load unpacked.
 4. Select the `extension` folder.
 
-The extension applies the same rendering fix to `chatgpt.com`. Codex/ChatGPT Desktop is the toolkit's primary target.
+The extension applies the same rendering fix to `chatgpt.com`. Codex through ChatGPT Desktop is the toolkit's primary target.
 
 ## Limitations
 
@@ -107,7 +109,7 @@ Security review artifacts:
 ## Project Layout
 
 - `src/`: shared RTL JavaScript and CSS.
-- `desktop/`: Codex/ChatGPT Desktop launcher and injector.
+- `desktop/`: Codex through ChatGPT Desktop launcher and injector.
 - `extension/`: unpacked Chrome/Edge extension.
 - `scripts/`: sync and validation helpers.
 - `docs/architecture.md`: implementation details.
