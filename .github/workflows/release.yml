@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -22,9 +22,9 @@ jobs:
       - name: Read package version
         id: version
         run: |
-          VERSION="$(node -p "require('./package.json').version")"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          $version = node -p "require('./package.json').version"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
 
       - name: Stop when release already exists
         id: release
@@ -32,24 +32,26 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
         run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
+          gh release view $env:TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            "exists=true" >> $env:GITHUB_OUTPUT
+          }
+          else {
+            "exists=false" >> $env:GITHUB_OUTPUT
+          }
 
       - name: Verify release tag exists
         if: steps.release.outputs.exists == 'false'
         env:
           TAG: ${{ steps.version.outputs.tag }}
         run: |
-          git rev-parse --verify "$TAG"
+          git rev-parse --verify $env:TAG
 
       - name: Set up Node.js
         if: steps.release.outputs.exists == 'false'
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Verify package
@@ -65,7 +67,7 @@ jobs:
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          git archive --format=zip --prefix="codex-rtl-toolkit-v$VERSION/" --output="codex-rtl-toolkit-v$VERSION.zip" "$TAG"
+          git archive --format=zip --prefix="codex-rtl-toolkit-v$env:VERSION/" --output="codex-rtl-toolkit-v$env:VERSION.zip" $env:TAG
 
       - name: Create GitHub release
         if: steps.release.outputs.exists == 'false'
@@ -74,11 +76,11 @@ jobs:
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          NOTES_FILE="docs/releases/$TAG.md"
-          if [ ! -f "$NOTES_FILE" ]; then
-            NOTES_FILE="README.md"
-          fi
+          $notesFile = "docs/releases/$env:TAG.md"
+          if (-not (Test-Path $notesFile)) {
+            $notesFile = "README.md"
+          }
 
-          gh release create "$TAG" "codex-rtl-toolkit-v$VERSION.zip" \
-            --title "$TAG - ChatGPT Desktop support" \
-            --notes-file "$NOTES_FILE"
+          gh release create $env:TAG "codex-rtl-toolkit-v$env:VERSION.zip" `
+            --title "$env:TAG - ChatGPT Desktop support" `
+            --notes-file $notesFile
