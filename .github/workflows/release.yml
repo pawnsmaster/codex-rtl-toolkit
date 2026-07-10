@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read package version
+        id: version
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Stop when release already exists
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify release tag exists
+        if: steps.release.outputs.exists == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git rev-parse --verify "$TAG"
+
+      - name: Set up Node.js
+        if: steps.release.outputs.exists == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Verify package
+        if: steps.release.outputs.exists == 'false'
+        run: |
+          npm ci --ignore-scripts
+          npm run check
+          npm audit --audit-level=moderate
+
+      - name: Build release ZIP
+        if: steps.release.outputs.exists == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git archive --format=zip --prefix="codex-rtl-toolkit-v$VERSION/" --output="codex-rtl-toolkit-v$VERSION.zip" "$TAG"
+
+      - name: Create GitHub release
+        if: steps.release.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          NOTES_FILE="docs/releases/$TAG.md"
+          if [ ! -f "$NOTES_FILE" ]; then
+            NOTES_FILE="README.md"
+          fi
+
+          gh release create "$TAG" "codex-rtl-toolkit-v$VERSION.zip" \
+            --title "$TAG - ChatGPT Desktop support" \
+            --notes-file "$NOTES_FILE"
