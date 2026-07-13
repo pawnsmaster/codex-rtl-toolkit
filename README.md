@@ -1,8 +1,6 @@
 # Codex (ChatGPT Desktop) RTL Toolkit
 
-Fix mixed RTL/LTR text for Arabic-script languages in Codex after the ChatGPT Desktop update while keeping code left-to-right.
-
-Supports languages written with the Arabic script, including Arabic, Persian, Urdu, Kurdish, Pashto, and Sindhi.
+One-click RTL rendering fix for Codex through ChatGPT Desktop on Windows. Arabic-script text reads right-to-left, English stays left-to-right, and programming code keeps its normal layout.
 
 Codex Desktop is now shipped through the ChatGPT desktop app on some Windows installs. This toolkit targets that Codex/ChatGPT Desktop experience, not ordinary browser ChatGPT.
 
@@ -19,15 +17,35 @@ Codex/ChatGPT Desktop may remain active after its window is closed. The launcher
 
 Requirements: Windows, Node.js 20+, and Codex through ChatGPT Desktop.
 
+## Supported Languages
+
+The toolkit detects RTL text written with the Arabic script. It supports Arabic, Persian, Urdu, Arabic-script Kurdish such as Sorani, Pashto, and Sindhi. English and other Latin-script lines remain LTR.
+
 ## What It Fixes
 
 - Arabic-script RTL paragraphs align right.
 - Mixed RTL and English text renders in the correct order.
 - English runs and sentence-ending punctuation keep their natural position inside RTL text.
-- RTL Markdown inside fenced blocks aligns right without changing programming code direction.
+- Fenced `text` and `markdown` blocks choose direction per line: Arabic-script lines are RTL and English-only lines are LTR.
+- Markdown blocks work with or without headings, lists, or other Markdown syntax tokens.
 - Arabic-script Markdown files displayed in the side panel use RTL per line while English and code lines remain LTR.
 - Code blocks, terminals, file paths, and inline code remain LTR.
 - English-heavy messages keep their normal direction.
+- Dynamically rendered chat blocks are rescanned as soon as their lines appear.
+
+## Screenshots
+
+### Mixed chat content
+
+Normal messages, fenced Markdown, fenced text, and programming code keep the appropriate direction independently.
+
+![Mixed Arabic and English chat content with RTL text and LTR code](docs/images/chat-mixed-rtl.png)
+
+### Markdown side panel
+
+Arabic-script Markdown content, tables, and mixed technical terms render RTL inside the Codex side panel.
+
+![Arabic Markdown file rendered RTL in the Codex side panel](docs/images/side-panel-markdown-rtl.png)
 
 ## What the Launcher Does
 
@@ -35,7 +53,7 @@ Requirements: Windows, Node.js 20+, and Codex through ChatGPT Desktop.
 - checks that Node.js and npm are installed
 - runs `npm ci --ignore-scripts` on the first launch
 - starts Codex through ChatGPT Desktop with a DevTools port bound only to `127.0.0.1`
-- injects the local RTL rendering fix
+- injects the local RTL rendering fix as soon as the renderer is ready
 - checks GitHub Releases at most once every 24 hours and prints a link when an update is available
 
 It does not download updates automatically or change your messages, account data, or app installation files.
