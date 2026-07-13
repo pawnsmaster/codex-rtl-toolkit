@@ -113,21 +113,47 @@
     const classMatch = classNames.match(/(?:language|lang)-([a-z0-9_-]+)/i);
     if (classMatch?.[1]) return classMatch[1].toLowerCase();
 
+    const codeBlock = code.closest("[class*='codeBlock' i], [data-testid*='code' i]");
+    const headerLabel = codeBlock?.firstElementChild?.firstElementChild?.textContent?.trim();
+    if (/^[a-z0-9_-]{1,24}$/i.test(headerLabel || "")) return headerLabel.toLowerCase();
+
     const firstLine = (code.textContent || "").trimStart().split(/\r?\n/, 1)[0]?.trim();
     return /^[a-z0-9_-]{1,24}$/i.test(firstLine || "") ? firstLine.toLowerCase() : "";
   }
 
-  function applyTextCodeBlockDirection(code) {
+  function applyProseCodeDirection(code) {
     const language = codeLanguage(code);
-    if (!["text", "txt", "plain", "plaintext", "md", "markdown"].includes(language)) return;
-    if (!ARABIC_SCRIPT_RE.test(code.textContent || "")) return;
-
     const pre = code.closest("pre");
-    code.dataset.codexTextBlock = "true";
-    code.dir = "rtl";
-    if (pre) {
-      pre.dataset.codexTextBlock = "true";
-      pre.dir = "rtl";
+    const isText = ["text", "txt", "plain", "plaintext"].includes(language);
+    const isMarkdown = ["md", "markdown"].includes(language)
+      || (!language && Boolean(code.querySelector(".hljs-bullet, .hljs-section, .hljs-strong, .hljs-emphasis")));
+
+    delete code.dataset.codexTextBlock;
+    delete pre?.dataset.codexTextBlock;
+    if (!isText && !isMarkdown) return;
+
+    const lineContainer = code.firstElementChild;
+    if (!lineContainer?.children.length) return;
+
+    code.dataset.codexProseCode = "true";
+    code.dir = "ltr";
+
+    for (const line of lineContainer.children) {
+      const direction = ARABIC_SCRIPT_RE.test(line.textContent || "") ? "rtl" : "ltr";
+      line.dir = direction;
+      line.dataset.codexProseDirection = direction;
+      delete line.dataset.codexMarkdownRtl;
+
+      for (const token of line.querySelectorAll("*")) {
+        if (direction === "rtl" && ARABIC_SCRIPT_RE.test(token.textContent || "")) {
+          token.dir = "rtl";
+          token.dataset.codexProseTokenRtl = "true";
+        } else if (token.dataset.codexProseTokenRtl === "true" || token.dataset.codexMarkdownTokenRtl === "true") {
+          delete token.dataset.codexProseTokenRtl;
+          delete token.dataset.codexMarkdownTokenRtl;
+          if (token.getAttribute("dir") === "rtl") token.removeAttribute("dir");
+        }
+      }
     }
   }
 
@@ -182,29 +208,6 @@
     }
   }
 
-  function applyMarkdownCodeDirection(code) {
-    if (!code?.querySelector(".hljs-bullet, .hljs-section, .hljs-strong, .hljs-emphasis")) return;
-    const lineContainer = code.firstElementChild;
-    if (!lineContainer) return;
-    code.dataset.codexMarkdown = "true";
-
-    for (const line of lineContainer.children) {
-      if (!ARABIC_SCRIPT_RE.test(line.textContent || "")) continue;
-      line.dir = "rtl";
-      line.dataset.codexMarkdownRtl = "true";
-
-      for (const token of line.querySelectorAll("*")) {
-        if (ARABIC_SCRIPT_RE.test(token.textContent || "")) {
-          token.dir = "rtl";
-          token.dataset.codexMarkdownTokenRtl = "true";
-        } else if (token.dataset.codexMarkdownTokenRtl === "true") {
-          delete token.dataset.codexMarkdownTokenRtl;
-          if (token.getAttribute("dir") === "rtl") token.removeAttribute("dir");
-        }
-      }
-    }
-  }
-
   function applyMarkdownEditorLineDirection(line) {
     const text = (line.innerText || line.textContent || "").trim();
     const direction = ARABIC_SCRIPT_RE.test(text) ? "rtl" : "ltr";
@@ -250,10 +253,8 @@
       el.dir = "ltr";
       el.dataset.codexCodeLtr = "true";
     });
-    if (root.matches && root.matches("code")) applyMarkdownCodeDirection(root);
-    root.querySelectorAll?.("code").forEach(applyMarkdownCodeDirection);
-    if (root.matches && root.matches("code")) applyTextCodeBlockDirection(root);
-    root.querySelectorAll?.("code").forEach(applyTextCodeBlockDirection);
+    if (root.matches && root.matches("code")) applyProseCodeDirection(root);
+    root.querySelectorAll?.("code").forEach(applyProseCodeDirection);
     if (root.matches && root.matches(BLOCK_SELECTOR)) applyDirection(root);
     root.querySelectorAll?.(BLOCK_SELECTOR).forEach(applyDirection);
     if (root.matches && root.matches(TEXT_LEAF_SELECTOR)) applyTextLeafDirection(root);

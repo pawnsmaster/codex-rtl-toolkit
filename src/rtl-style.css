@@ -55,20 +55,30 @@
   display: inline-block;
 }
 
-[data-codex-rtl-root="true"] code[data-codex-markdown="true"] {
+[data-codex-rtl-root="true"] code[data-codex-prose-code="true"] {
   display: block !important;
   width: 100% !important;
 }
 
-[data-codex-rtl-root="true"] code [data-codex-markdown-rtl="true"] {
+[data-codex-rtl-root="true"] code [data-codex-prose-direction="rtl"] {
   display: block !important;
   width: 100% !important;
   direction: rtl !important;
   text-align: right !important;
-  unicode-bidi: isolate !important;
+  unicode-bidi: plaintext !important;
+  white-space: pre-wrap !important;
 }
 
-[data-codex-rtl-root="true"] code [data-codex-markdown-rtl="true"] [data-codex-markdown-token-rtl="true"] {
+[data-codex-rtl-root="true"] code [data-codex-prose-direction="ltr"] {
+  display: block !important;
+  width: 100% !important;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+  white-space: pre-wrap !important;
+}
+
+[data-codex-rtl-root="true"] code [data-codex-prose-direction="rtl"] [data-codex-prose-token-rtl="true"] {
   direction: rtl !important;
   unicode-bidi: isolate !important;
 }
@@ -80,19 +90,6 @@
 [data-codex-rtl-root="true"] [class*="shiki" i] {
   tab-size: 2;
   white-space: pre !important;
-}
-
-[data-codex-rtl-root="true"] pre[data-codex-text-block="true"],
-[data-codex-rtl-root="true"] pre[data-codex-text-block="true"] > code[data-codex-text-block="true"] {
-  direction: rtl !important;
-  text-align: right !important;
-  unicode-bidi: plaintext !important;
-  white-space: pre-wrap !important;
-}
-
-[data-codex-rtl-root="true"] pre[data-codex-text-block="true"] > code[data-codex-text-block="true"] {
-  display: block !important;
-  width: 100% !important;
 }
 
 [data-codex-rtl-root="true"] p,
