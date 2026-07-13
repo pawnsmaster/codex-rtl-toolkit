@@ -192,6 +192,16 @@
       if (!ARABIC_SCRIPT_RE.test(line.textContent || "")) continue;
       line.dir = "rtl";
       line.dataset.codexMarkdownRtl = "true";
+
+      for (const token of line.querySelectorAll("*")) {
+        if (ARABIC_SCRIPT_RE.test(token.textContent || "")) {
+          token.dir = "rtl";
+          token.dataset.codexMarkdownTokenRtl = "true";
+        } else if (token.dataset.codexMarkdownTokenRtl === "true") {
+          delete token.dataset.codexMarkdownTokenRtl;
+          if (token.getAttribute("dir") === "rtl") token.removeAttribute("dir");
+        }
+      }
     }
   }
 
