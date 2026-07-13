@@ -1,6 +1,6 @@
 (function codexRtlToolkit() {
   const STYLE_ID = "codex-rtl-toolkit-style";
-  const ARABIC_RE = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  const ARABIC_SCRIPT_RE = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
   const LATIN_RE = /[A-Za-z]/;
   const processed = new WeakMap();
   const pending = new Set();
@@ -48,6 +48,7 @@
     "[class*='terminal' i]",
     "[class*='monaco' i]"
   ].join(",");
+  const MARKDOWN_EDITOR_SELECTOR = ".cm-content[data-language='markdown']";
 
   function ensureStyle() {
     let style = document.getElementById(STYLE_ID);
@@ -70,10 +71,19 @@
     return Boolean(node.closest(INTERACTIVE_SELECTOR));
   }
 
+  function isMarkdownEditor(node) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) return false;
+    return Boolean(
+      node.matches?.(MARKDOWN_EDITOR_SELECTOR)
+      || node.closest?.(MARKDOWN_EDITOR_SELECTOR)
+      || node.querySelector?.(MARKDOWN_EDITOR_SELECTOR)
+    );
+  }
+
   function classifyText(text) {
-    const hasArabic = ARABIC_RE.test(text);
+    const hasArabic = ARABIC_SCRIPT_RE.test(text);
     if (!hasArabic) return "auto";
-    const arabicCount = (text.match(new RegExp(ARABIC_RE.source, "g")) || []).length;
+    const arabicCount = (text.match(new RegExp(ARABIC_SCRIPT_RE.source, "g")) || []).length;
     const latinCount = (text.match(/[A-Za-z]/g) || []).length;
     return arabicCount >= Math.max(2, latinCount * 0.25) ? "rtl" : "auto";
   }
@@ -89,7 +99,7 @@
     if (direction === "rtl") {
       el.dataset.codexRtl = "true";
       el.dir = "rtl";
-    } else if (ARABIC_RE.test(text) && LATIN_RE.test(text)) {
+    } else if (ARABIC_SCRIPT_RE.test(text) && LATIN_RE.test(text)) {
       el.dataset.codexBidi = "auto";
       if (!el.getAttribute("dir")) el.dir = "auto";
     }
@@ -110,7 +120,7 @@
   function applyTextCodeBlockDirection(code) {
     const language = codeLanguage(code);
     if (!["text", "txt", "plain", "plaintext", "md", "markdown"].includes(language)) return;
-    if (!ARABIC_RE.test(code.textContent || "")) return;
+    if (!ARABIC_SCRIPT_RE.test(code.textContent || "")) return;
 
     const pre = code.closest("pre");
     code.dataset.codexTextBlock = "true";
@@ -123,7 +133,7 @@
 
   function hasDirectText(el) {
     return Array.from(el.childNodes).some((node) => (
-      node.nodeType === Node.TEXT_NODE && ARABIC_RE.test(node.textContent || "")
+      node.nodeType === Node.TEXT_NODE && ARABIC_SCRIPT_RE.test(node.textContent || "")
     ));
   }
 
@@ -179,14 +189,53 @@
     code.dataset.codexMarkdown = "true";
 
     for (const line of lineContainer.children) {
-      if (!ARABIC_RE.test(line.textContent || "")) continue;
+      if (!ARABIC_SCRIPT_RE.test(line.textContent || "")) continue;
       line.dir = "rtl";
       line.dataset.codexMarkdownRtl = "true";
     }
   }
 
+  function applyMarkdownEditorLineDirection(line) {
+    const text = (line.innerText || line.textContent || "").trim();
+    const direction = ARABIC_SCRIPT_RE.test(text) ? "rtl" : "ltr";
+    if (
+      processed.get(line) === text
+      && line.dataset.codexMarkdownEditorDirection === direction
+      && line.getAttribute("dir") === direction
+    ) return;
+
+    processed.set(line, text);
+    line.dataset.codexMarkdownEditorDirection = direction;
+    line.dir = direction;
+  }
+
+  function applyMarkdownEditorDirection(root) {
+    const containingEditor = root.closest?.(MARKDOWN_EDITOR_SELECTOR);
+    if (containingEditor) {
+      containingEditor.dataset.codexMarkdownEditor = "true";
+      const line = root.matches?.(".cm-line") ? root : root.closest?.(".cm-line");
+      if (line && line.parentElement === containingEditor) {
+        applyMarkdownEditorLineDirection(line);
+      } else {
+        containingEditor.querySelectorAll(":scope > .cm-line").forEach(applyMarkdownEditorLineDirection);
+      }
+      return;
+    }
+
+    const editors = [];
+    if (root.matches?.(MARKDOWN_EDITOR_SELECTOR)) editors.push(root);
+    root.querySelectorAll?.(MARKDOWN_EDITOR_SELECTOR).forEach((editor) => editors.push(editor));
+
+    for (const editor of editors) {
+      editor.dataset.codexMarkdownEditor = "true";
+      editor.querySelectorAll(":scope > .cm-line").forEach(applyMarkdownEditorLineDirection);
+    }
+  }
+
   function scan(root) {
-    if (!root || root.nodeType !== Node.ELEMENT_NODE || isInteractive(root)) return;
+    if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
+    applyMarkdownEditorDirection(root);
+    if (isInteractive(root) && !isMarkdownEditor(root)) return;
     root.querySelectorAll?.(CODE_BLOCK_SELECTOR).forEach((el) => {
       el.dir = "ltr";
       el.dataset.codexCodeLtr = "true";
@@ -203,17 +252,25 @@
     root.querySelectorAll?.("[data-codex-rtl='true']").forEach(isolateLatinRuns);
   }
 
+  function flushPending() {
+    const batch = Array.from(pending).slice(0, 25);
+    batch.forEach((root) => pending.delete(root));
+    batch.forEach(scan);
+
+    if (pending.size > 0) {
+      requestAnimationFrame(flushPending);
+    } else {
+      scheduled = false;
+    }
+  }
+
   function scheduleScan(root) {
-    if (!root || root.nodeType !== Node.ELEMENT_NODE || isInteractive(root)) return;
+    if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
+    if (isInteractive(root) && !isMarkdownEditor(root)) return;
     pending.add(root);
     if (scheduled) return;
     scheduled = true;
-    requestAnimationFrame(() => {
-      scheduled = false;
-      const batch = Array.from(pending).slice(0, 25);
-      pending.clear();
-      batch.forEach(scan);
-    });
+    requestAnimationFrame(flushPending);
   }
 
   ensureStyle();
@@ -228,6 +285,13 @@
       if (mutation.type === "characterData") {
         scheduleScan(mutation.target.parentElement);
       }
+      if (
+        mutation.type === "attributes"
+        && mutation.target.matches?.(".cm-line")
+        && isMarkdownEditor(mutation.target)
+      ) {
+        scheduleScan(mutation.target);
+      }
       for (const node of mutation.addedNodes) {
         scheduleScan(node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
       }
@@ -237,6 +301,8 @@
   window.__CODEX_RTL_OBSERVER__.observe(document.body, {
     childList: true,
     characterData: true,
+    attributes: true,
+    attributeFilter: ["dir", "data-codex-markdown-editor-direction"],
     subtree: true
   });
 

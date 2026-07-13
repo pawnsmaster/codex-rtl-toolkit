@@ -1,7 +1,7 @@
 {
   "name": "codex-rtl-toolkit",
-  "version": "0.1.5",
-  "description": "RTL rendering fixes for Arabic/English Codex after the ChatGPT Desktop update.",
+  "version": "0.1.6",
+  "description": "RTL rendering fixes for Arabic-script languages and English in Codex after the ChatGPT Desktop update.",
   "type": "module",
   "scripts": {
     "build:extension": "node scripts/sync-extension.mjs",
@@ -12,6 +12,8 @@
     "codex",
     "rtl",
     "arabic",
+    "persian",
+    "urdu",
     "bidi",
     "chrome-extension"
   ],

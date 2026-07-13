@@ -101,3 +101,15 @@
 [data-codex-rtl-root="true"] h6 {
   unicode-bidi: plaintext !important;
 }
+
+[data-codex-rtl-root="true"] .cm-content[data-language="markdown"] > .cm-line[data-codex-markdown-editor-direction="rtl"] {
+  direction: rtl !important;
+  text-align: right !important;
+  unicode-bidi: plaintext !important;
+}
+
+[data-codex-rtl-root="true"] .cm-content[data-language="markdown"] > .cm-line[data-codex-markdown-editor-direction="ltr"] {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+}

@@ -4,7 +4,7 @@ Codex RTL Toolkit has one shared rendering fix and two delivery paths.
 
 ## Shared Assets
 
-- `src/injected.js`: classifies Arabic-heavy text blocks and applies `dir`.
+- `src/injected.js`: classifies Arabic-script RTL text blocks and applies `dir`.
 - `src/rtl-style.css`: CSS overrides for RTL text and LTR code blocks.
 
 Run this after editing shared assets:
@@ -31,7 +31,8 @@ The extension loads the same JavaScript and CSS on `chatgpt.com`.
 
 ## Direction Rules
 
-- Arabic-heavy message text becomes RTL.
-- Mixed Arabic/English text uses `unicode-bidi: plaintext`.
-- Code, terminals, file paths inside code blocks, and editors stay LTR.
+- Arabic-script-heavy message text becomes RTL.
+- Mixed RTL/English text uses `unicode-bidi: plaintext`.
+- Markdown files in the side-panel CodeMirror editor are classified per line.
+- Code, terminals, file paths inside code blocks, and non-Markdown editors stay LTR.
 - Composer/input areas are ignored to avoid typing lag.

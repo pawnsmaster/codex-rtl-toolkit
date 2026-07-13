@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Codex RTL Toolkit",
-  "version": "0.1.4",
-  "description": "Improves Arabic/English RTL rendering in Codex and ChatGPT conversations.",
+  "version": "0.1.6",
+  "description": "Improves mixed RTL/LTR rendering for Arabic-script languages in Codex and ChatGPT.",
   "content_scripts": [
     {
       "matches": [

@@ -1,6 +1,8 @@
 # Codex (ChatGPT Desktop) RTL Toolkit
 
-Fix mixed Arabic/English text in Codex after the ChatGPT Desktop update while keeping code left-to-right.
+Fix mixed RTL/LTR text for Arabic-script languages in Codex after the ChatGPT Desktop update while keeping code left-to-right.
+
+Supports languages written with the Arabic script, including Arabic, Persian, Urdu, Kurdish, Pashto, and Sindhi.
 
 Codex Desktop is now shipped through the ChatGPT desktop app on some Windows installs. This toolkit targets that Codex/ChatGPT Desktop experience, not ordinary browser ChatGPT.
 
@@ -8,7 +10,7 @@ Codex Desktop is now shipped through the ChatGPT desktop app on some Windows ins
 
 **Download, extract, and double-click `Run-CodexRTL.cmd`.**
 
-1. Download [`codex-rtl-toolkit-v0.1.5.zip`](https://github.com/pawnsmaster/codex-rtl-toolkit/releases/latest).
+1. Download [`codex-rtl-toolkit-v0.1.6.zip`](https://github.com/pawnsmaster/codex-rtl-toolkit/releases/latest).
 2. Extract the ZIP.
 3. Save any unfinished input in Codex/ChatGPT Desktop.
 4. Double-click `Run-CodexRTL.cmd`.
@@ -19,10 +21,11 @@ Requirements: Windows, Node.js 20+, and Codex through ChatGPT Desktop.
 
 ## What It Fixes
 
-- Arabic paragraphs align right.
-- Mixed Arabic and English render in the correct order.
+- Arabic-script RTL paragraphs align right.
+- Mixed RTL and English text renders in the correct order.
 - English runs and sentence-ending punctuation keep their natural position inside RTL text.
-- Arabic Markdown inside fenced blocks aligns right without changing programming code direction.
+- RTL Markdown inside fenced blocks aligns right without changing programming code direction.
+- Arabic-script Markdown files displayed in the side panel use RTL per line while English and code lines remain LTR.
 - Code blocks, terminals, file paths, and inline code remain LTR.
 - English-heavy messages keep their normal direction.
 
