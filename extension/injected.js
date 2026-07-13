@@ -277,8 +277,11 @@
 
   function scheduleScan(root) {
     if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
-    if (isInteractive(root) && !isMarkdownEditor(root)) return;
-    pending.add(root);
+    const scanRoot = root.closest?.("[class*='codeBlock' i], [data-testid*='code' i]")
+      || root.closest?.("code")
+      || root;
+    if (isInteractive(scanRoot) && !isMarkdownEditor(scanRoot)) return;
+    pending.add(scanRoot);
     if (scheduled) return;
     scheduled = true;
     requestAnimationFrame(flushPending);

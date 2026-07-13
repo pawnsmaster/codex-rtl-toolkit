@@ -120,8 +120,6 @@ Info "Starting Codex/ChatGPT Desktop with localhost-only DevTools..."
 & (Join-Path $PSScriptRoot "Launch-CodexRTL.ps1")
 
 Info "Waiting for Codex/ChatGPT to open..."
-Start-Sleep -Seconds 5
-
 Info "Injecting RTL fix..."
 npm.cmd run inject
 if ($LASTEXITCODE -ne 0) {

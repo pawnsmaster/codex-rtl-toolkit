@@ -128,6 +128,7 @@ const candidates = await waitForCandidates();
 
 const expression = `
 (() => {
+  if (!document.body) return false;
   window.__CODEX_RTL_STYLE__ = ${JSON.stringify(css)};
   const source = ${JSON.stringify(injected)};
   (0, eval)(source);
@@ -135,7 +136,25 @@ const expression = `
 })()
 `;
 
+async function injectWhenReady(target, timeoutMilliseconds = 10000) {
+  const deadline = Date.now() + timeoutMilliseconds;
+  let lastError = new Error("The renderer is not ready for injection yet.");
+
+  do {
+    try {
+      const evaluation = await evaluate(target.webSocketDebuggerUrl, expression);
+      if (evaluation.result?.value === true) return;
+      lastError = new Error("The renderer document is not ready for injection yet.");
+    } catch (error) {
+      lastError = error;
+    }
+    await delay(200);
+  } while (Date.now() < deadline);
+
+  throw lastError;
+}
+
 for (const target of candidates) {
-  await evaluate(target.webSocketDebuggerUrl, expression);
+  await injectWhenReady(target);
   console.log(`Injected RTL fix into: ${target.title || target.url}`);
 }
