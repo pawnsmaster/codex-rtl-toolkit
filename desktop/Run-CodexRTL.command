@@ -46,9 +46,12 @@ fi
 
 if [[ ! -d node_modules/ws ]]; then npm install --omit=dev; fi
 
+# --force-ui-direction=ltr keeps the native window chrome LTR on RTL OS locales
+# (see the Windows launcher note); RTL text direction is applied in the renderer.
 open -na "$APP" --args \
   "--remote-debugging-address=127.0.0.1" \
-  "--remote-debugging-port=$PORT"
+  "--remote-debugging-port=$PORT" \
+  "--force-ui-direction=ltr"
 
 echo "Waiting for the Codex renderer and applying the RTL fix..."
 CODEX_RTL_PORT="$PORT" npm run inject
