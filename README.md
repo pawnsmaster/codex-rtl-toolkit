@@ -1,6 +1,6 @@
 # Codex (ChatGPT Desktop) RTL Toolkit
 
-Session-local RTL rendering fixes for Codex through ChatGPT Desktop on Windows and macOS. Right-to-left text — Arabic, Persian, and other RTL scripts — reads right-to-left, English stays left-to-right, and programming code keeps its normal layout.
+Session-local RTL rendering fixes for Codex through ChatGPT Desktop on Windows and macOS. Right-to-left text — Arabic, Persian, Urdu, and other RTL scripts — reads right-to-left, English stays left-to-right, and programming code keeps its normal layout.
 
 Codex Desktop is now shipped through the ChatGPT desktop app on some Windows installs. This toolkit targets that Codex/ChatGPT Desktop experience, not ordinary browser ChatGPT.
 
@@ -8,7 +8,7 @@ Codex Desktop is now shipped through the ChatGPT desktop app on some Windows ins
 
 **Download, extract, and double-click `Run-CodexRTL.cmd`.**
 
-1. Download [`codex-rtl-toolkit-v0.1.6.zip`](https://github.com/pawnsmaster/codex-rtl-toolkit/releases/latest).
+1. Download [`codex-rtl-toolkit-v0.1.7.zip`](https://github.com/pawnsmaster/codex-rtl-toolkit/releases/latest).
 2. Extract the ZIP.
 3. Save any unfinished input in Codex/ChatGPT Desktop.
 4. Double-click `Run-CodexRTL.cmd`.

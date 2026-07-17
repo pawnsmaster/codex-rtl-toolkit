@@ -1,6 +1,6 @@
 {
   "name": "codex-rtl-toolkit",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "RTL rendering fixes for Arabic-script languages and English in Codex after the ChatGPT Desktop update.",
   "type": "module",
   "scripts": {
