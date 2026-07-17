@@ -1,6 +1,6 @@
 # Codex (ChatGPT Desktop) RTL Toolkit
 
-Session-local RTL rendering fixes for Codex through ChatGPT Desktop on Windows and macOS. Arabic-script text reads right-to-left, English stays left-to-right, and programming code keeps its normal layout.
+Session-local RTL rendering fixes for Codex through ChatGPT Desktop on Windows and macOS. Right-to-left text — Arabic, Persian, and other RTL scripts — reads right-to-left, English stays left-to-right, and programming code keeps its normal layout.
 
 Codex Desktop is now shipped through the ChatGPT desktop app on some Windows installs. This toolkit targets that Codex/ChatGPT Desktop experience, not ordinary browser ChatGPT.
 
@@ -27,19 +27,25 @@ The launcher finds `ChatGPT.app` or `Codex.app`, restarts it with a localhost-on
 
 ## Supported Languages
 
-The toolkit detects RTL text written with the Arabic script. It supports Arabic, Persian, Urdu, Arabic-script Kurdish such as Sorani, Pashto, and Sindhi. English and other Latin-script lines remain LTR.
+The toolkit detects **any right-to-left script, not just Arabic.** Direction is decided per Unicode code point, so it covers:
+
+- **Arabic** and Arabic-script languages — Persian (Farsi), Urdu, Kurdish (Sorani), Pashto, Sindhi, and Uyghur
+- Other right-to-left scripts are handled automatically as well
+
+English and other Latin-script lines always remain LTR.
 
 ## What It Fixes
 
-- Arabic-script RTL paragraphs align right.
+- RTL paragraphs (Arabic, Persian, or any RTL script) align right.
 - Mixed RTL and English text renders in the correct order.
 - English runs and sentence-ending punctuation keep their natural position inside RTL text.
-- Fenced `text` and `markdown` blocks choose direction per line: Arabic-script lines are RTL and English-only lines are LTR.
+- Fenced `text` and `markdown` blocks choose direction per line: RTL-script lines are RTL and English-only lines are LTR.
 - Markdown blocks work with or without headings, lists, or other Markdown syntax tokens.
-- Arabic-script Markdown files displayed in the side panel use RTL per line while English and code lines remain LTR.
+- RTL-script Markdown files displayed in the side panel use RTL per line while English and code lines remain LTR.
 - Code blocks, terminals, file paths, and inline code remain LTR.
 - English-heavy messages keep their normal direction.
 - Dynamically rendered chat blocks are rescanned as soon as their lines appear.
+- On an RTL OS locale (e.g. Windows set to Arabic or Persian), the app's **native window chrome is kept LTR** — the minimize/maximize/close controls and menu bar stay in their normal position instead of being mirrored over the app's own buttons. The chat text direction is unaffected.
 
 ## Screenshots
 
@@ -57,10 +63,10 @@ Arabic-script Markdown content, tables, and mixed technical terms render RTL ins
 
 ## What the Launcher Does
 
-- closes running or background Codex/ChatGPT Desktop processes
+- closes running or background Codex/ChatGPT Desktop processes, then waits for them to fully exit before continuing
 - checks that Node.js and npm are installed
 - runs `npm ci --ignore-scripts` on the first launch
-- starts Codex through ChatGPT Desktop with a DevTools port bound only to `127.0.0.1`
+- starts Codex through ChatGPT Desktop with a DevTools port bound only to `127.0.0.1`, and forces the window chrome to LTR (`--force-ui-direction=ltr`) so the native window controls are not mirrored on RTL OS locales
 - injects the local RTL rendering fix as soon as the renderer is ready
 - checks GitHub Releases at most once every 24 hours and prints a link when an update is available
 
