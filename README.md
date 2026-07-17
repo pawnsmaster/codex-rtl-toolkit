@@ -1,6 +1,6 @@
 # Codex (ChatGPT Desktop) RTL Toolkit
 
-One-click RTL rendering fix for Codex through ChatGPT Desktop on Windows. Arabic-script text reads right-to-left, English stays left-to-right, and programming code keeps its normal layout.
+Session-local RTL rendering fixes for Codex through ChatGPT Desktop on Windows and macOS. Arabic-script text reads right-to-left, English stays left-to-right, and programming code keeps its normal layout.
 
 Codex Desktop is now shipped through the ChatGPT desktop app on some Windows installs. This toolkit targets that Codex/ChatGPT Desktop experience, not ordinary browser ChatGPT.
 
@@ -15,7 +15,15 @@ Codex Desktop is now shipped through the ChatGPT desktop app on some Windows ins
 
 Codex/ChatGPT Desktop may remain active after its window is closed. The launcher safely closes any running desktop app processes, starts a fresh RTL-enabled session, and applies the fix automatically.
 
-Requirements: Windows, Node.js 20+, and Codex through ChatGPT Desktop.
+Requirements: Windows or macOS, Node.js 20+, and Codex through ChatGPT Desktop.
+
+### macOS
+
+1. Download and extract the project.
+2. Open Terminal in the extracted folder.
+3. Run `bash desktop/Run-CodexRTL.command`.
+
+The launcher finds `ChatGPT.app` or `Codex.app`, restarts it with a localhost-only debugging port, and applies the same session-local fix used on Windows. It does not modify or re-sign the application. Set `CODEX_RTL_APP_PATH` if the app is installed somewhere else.
 
 ## Supported Languages
 
@@ -130,7 +138,7 @@ Security review artifacts:
 ## Project Layout
 
 - `src/`: shared RTL JavaScript and CSS.
-- `desktop/`: Codex through ChatGPT Desktop launcher and injector.
+- `desktop/`: Windows and macOS launchers plus the shared desktop injector.
 - `extension/`: unpacked Chrome/Edge extension.
 - `scripts/`: sync and validation helpers.
 - `docs/architecture.md`: implementation details.

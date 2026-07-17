@@ -25,6 +25,8 @@ That copies shared assets into `extension/`, because Chrome extensions cannot lo
 
 The injection is session-local. If Codex reloads, run `npm run inject` again.
 
+On macOS, `desktop/Run-CodexRTL.command` locates the ChatGPT or Codex application bundle, restarts it with the same localhost-only DevTools port, and invokes the shared injector. It does not patch `app.asar` or alter the application signature.
+
 ## Browser Extension Path
 
 The extension loads the same JavaScript and CSS on `chatgpt.com`.

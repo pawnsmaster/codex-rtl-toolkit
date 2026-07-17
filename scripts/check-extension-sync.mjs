@@ -6,6 +6,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
 
 const pairs = [
+  ["src/rtl-core.js", "extension/rtl-core.js"],
   ["src/injected.js", "extension/injected.js"],
   ["src/rtl-style.css", "extension/rtl-style.css"]
 ];
