@@ -1,6 +1,8 @@
 (function codexRtlToolkit() {
   const STYLE_ID = "codex-rtl-toolkit-style";
-  const ARABIC_SCRIPT_RE = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  const core = globalThis.__CODEX_RTL_CORE__;
+  if (!core) throw new Error("Codex RTL core was not loaded.");
+  const ARABIC_SCRIPT_RE = core.RTL_CHAR_RE;
   const LATIN_RE = /[A-Za-z]/;
   const processed = new WeakMap();
   const pending = new Set();
@@ -81,11 +83,7 @@
   }
 
   function classifyText(text) {
-    const hasArabic = ARABIC_SCRIPT_RE.test(text);
-    if (!hasArabic) return "auto";
-    const arabicCount = (text.match(new RegExp(ARABIC_SCRIPT_RE.source, "g")) || []).length;
-    const latinCount = (text.match(/[A-Za-z]/g) || []).length;
-    return arabicCount >= Math.max(2, latinCount * 0.25) ? "rtl" : "auto";
+    return core.classifyText(text);
   }
 
   function applyDirection(el) {
@@ -176,7 +174,7 @@
 
     while ((node = walker.nextNode())) {
       const parent = node.parentElement;
-      if (!parent || parent.closest(`${CODE_BLOCK_SELECTOR}, [data-codex-ltr-run], ${INTERACTIVE_SELECTOR}`)) continue;
+      if (!parent || parent.closest(`${CODE_BLOCK_SELECTOR}, [data-codex-ltr-run], [data-codex-math-run], ${INTERACTIVE_SELECTOR}`)) continue;
       if (LATIN_RE.test(node.textContent || "")) textNodes.push(node);
     }
 
@@ -205,6 +203,53 @@
       }
       fragment.append(text.slice(offset));
       textNode.replaceWith(fragment);
+    }
+  }
+
+  function isolateMathRuns(el) {
+    if (!el?.dataset.codexRtl || isCodeLike(el) || isInteractive(el)) return;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      const parent = node.parentElement;
+      if (!parent || parent.closest("[data-codex-math-run], [data-codex-ltr-run], pre, code")) continue;
+      if (core.segmentText(node.textContent || "").some((segment) => segment.type === "math")) textNodes.push(node);
+    }
+
+    for (const textNode of textNodes) {
+      const segments = core.segmentText(textNode.textContent || "");
+      const fragment = document.createDocumentFragment();
+      for (const segment of segments) {
+        if (segment.type === "text") {
+          fragment.append(segment.value);
+        } else {
+          const bdi = document.createElement("bdi");
+          bdi.dir = "ltr";
+          bdi.dataset.codexMathRun = "true";
+          bdi.textContent = segment.value;
+          fragment.append(bdi);
+        }
+      }
+      textNode.replaceWith(fragment);
+    }
+  }
+
+  function applyTableDirection(table) {
+    if (!table || table.closest(`${CODE_BLOCK_SELECTOR}, ${INTERACTIVE_SELECTOR}`)) return;
+    const headers = Array.from(table.querySelectorAll("thead th"));
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const headerDirections = headers.map((cell) => core.cellDirection(cell.textContent || ""));
+    const firstColumnDirections = rows
+      .map((row) => row.querySelector("th, td"))
+      .filter(Boolean)
+      .map((cell) => core.cellDirection(cell.textContent || ""));
+    if (core.tableDirection(headerDirections, firstColumnDirections) === "rtl") {
+      table.dir = "rtl";
+      table.dataset.codexRtlTable = "true";
+    } else if (table.dataset.codexRtlTable === "true") {
+      delete table.dataset.codexRtlTable;
+      table.removeAttribute("dir");
     }
   }
 
@@ -255,12 +300,20 @@
     });
     if (root.matches && root.matches("code")) applyProseCodeDirection(root);
     root.querySelectorAll?.("code").forEach(applyProseCodeDirection);
+    if (root.matches?.("table")) applyTableDirection(root);
+    root.querySelectorAll?.("table").forEach(applyTableDirection);
     if (root.matches && root.matches(BLOCK_SELECTOR)) applyDirection(root);
     root.querySelectorAll?.(BLOCK_SELECTOR).forEach(applyDirection);
     if (root.matches && root.matches(TEXT_LEAF_SELECTOR)) applyTextLeafDirection(root);
     root.querySelectorAll?.(TEXT_LEAF_SELECTOR).forEach(applyTextLeafDirection);
-    if (root.matches && root.matches("[data-codex-rtl='true']")) isolateLatinRuns(root);
-    root.querySelectorAll?.("[data-codex-rtl='true']").forEach(isolateLatinRuns);
+    if (root.matches && root.matches("[data-codex-rtl='true']")) {
+      isolateMathRuns(root);
+      isolateLatinRuns(root);
+    }
+    root.querySelectorAll?.("[data-codex-rtl='true']").forEach((element) => {
+      isolateMathRuns(element);
+      isolateLatinRuns(element);
+    });
   }
 
   function flushPending() {

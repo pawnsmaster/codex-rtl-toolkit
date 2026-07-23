@@ -168,10 +168,15 @@ if ($running) {
 }
 
 Write-Host "Starting Codex/ChatGPT with local DevTools port $port..."
-$devToolsArguments = "--remote-debugging-address=127.0.0.1 --remote-debugging-port=$port"
+# --force-ui-direction=ltr is a Chromium switch honored at process start. On an
+# Arabic/RTL Windows locale Chromium otherwise mirrors the native window chrome
+# (WS_EX_LAYOUTRTL), flipping the minimize/maximize/close controls onto the app's
+# own buttons and misplacing the menu bar. Forcing LTR chrome fixes that without
+# modifying the app; the RTL text direction is handled separately in the renderer.
+$devToolsArguments = "--remote-debugging-address=127.0.0.1 --remote-debugging-port=$port --force-ui-direction=ltr"
 
 try {
-  Start-Process -FilePath $exe -ArgumentList "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=$port"
+  Start-Process -FilePath $exe -ArgumentList "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=$port", "--force-ui-direction=ltr"
 } catch {
   $directLaunchError = $_.Exception.Message
   $packagedIdentity = Get-PackagedApplicationIdentity $exe

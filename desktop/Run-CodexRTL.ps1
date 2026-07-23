@@ -93,10 +93,23 @@ if ($running) {
 
   Write-Host "Codex/ChatGPT is running. Closing it before enabling the RTL fix..." -ForegroundColor Yellow
   $running | Stop-Process -Force
-  Start-Sleep -Seconds 1
 
-  $stillRunning = @(Get-DesktopAppProcesses)
-  if ($stillRunning) {
+  # Poll until every desktop process (window + background/tray helpers) is gone,
+  # rather than trusting a single fixed wait. Force-kill is usually instant, but on
+  # slow/busy machines or with antivirus scanning the exit, a fixed 1s check can
+  # fail spuriously -- and launching before the single-instance lock is released can
+  # make the fresh --force-ui-direction/debug-port instance get swallowed by the old
+  # one. Matches the graceful poll the macOS launcher already does. ~10s ceiling.
+  $closed = $false
+  for ($attempt = 0; $attempt -lt 20; $attempt++) {
+    Start-Sleep -Milliseconds 500
+    if (-not (@(Get-DesktopAppProcesses))) {
+      $closed = $true
+      break
+    }
+  }
+
+  if (-not $closed) {
     Fail "Codex/ChatGPT could not be closed. End its processes in Task Manager, then try again."
   }
 }

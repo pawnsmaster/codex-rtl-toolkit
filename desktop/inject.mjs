@@ -15,10 +15,11 @@ if (!Number.isInteger(port) || port < 1024 || port > 65535) {
 }
 
 const css = readFileSync(resolve(root, "src", "rtl-style.css"), "utf8");
+const core = readFileSync(resolve(root, "src", "rtl-core.js"), "utf8");
 const injected = readFileSync(resolve(root, "src", "injected.js"), "utf8");
 
 if (dryRun) {
-  if (!css.includes("unicode-bidi") || !injected.includes("MutationObserver")) {
+  if (!css.includes("unicode-bidi") || !core.includes("segmentText") || !injected.includes("MutationObserver")) {
     throw new Error("RTL assets look incomplete.");
   }
   console.log("OK: RTL assets are present.");
@@ -32,7 +33,7 @@ async function getTargets() {
   try {
     response = await fetch(endpoint);
   } catch (error) {
-    throw new Error(`Cannot reach ${endpoint}. Start Codex with desktop/Launch-CodexRTL.ps1 first.`);
+    throw new Error(`Cannot reach ${endpoint}. Start Codex/ChatGPT with the toolkit launcher first.`);
   }
   if (!response.ok) {
     throw new Error(`DevTools endpoint returned HTTP ${response.status}.`);
@@ -130,6 +131,7 @@ const expression = `
 (() => {
   if (!document.body) return false;
   window.__CODEX_RTL_STYLE__ = ${JSON.stringify(css)};
+  (0, eval)(${JSON.stringify(core)});
   const source = ${JSON.stringify(injected)};
   (0, eval)(source);
   return Boolean(window.__CODEX_RTL_ACTIVE__);

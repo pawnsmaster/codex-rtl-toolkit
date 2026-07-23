@@ -1,12 +1,13 @@
 {
   "name": "codex-rtl-toolkit",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "RTL rendering fixes for Arabic-script languages and English in Codex after the ChatGPT Desktop update.",
   "type": "module",
   "scripts": {
     "build:extension": "node scripts/sync-extension.mjs",
     "inject": "node desktop/inject.mjs",
-    "check": "node --check desktop/inject.mjs && node --check src/injected.js && node --check scripts/sync-extension.mjs && node --check scripts/check-extension-sync.mjs && node --check extension/injected.js && node scripts/check-extension-sync.mjs && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-powershell.ps1"
+    "test": "node --test",
+    "check": "node --check desktop/inject.mjs && node --check src/rtl-core.js && node --check src/injected.js && node --check scripts/sync-extension.mjs && node --check scripts/check-extension-sync.mjs && node --check scripts/check-launchers.mjs && node --check extension/rtl-core.js && node --check extension/injected.js && node scripts/check-extension-sync.mjs && node scripts/check-launchers.mjs && npm test"
   },
   "keywords": [
     "codex",
@@ -20,5 +21,8 @@
   "license": "MIT",
   "dependencies": {
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
   }
 }

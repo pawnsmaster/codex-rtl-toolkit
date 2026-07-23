@@ -25,6 +25,21 @@
   unicode-bidi: isolate !important;
 }
 
+[data-codex-rtl-root="true"] [data-codex-math-run="true"] {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+}
+
+[data-codex-rtl-root="true"] table[data-codex-rtl-table="true"] {
+  direction: rtl !important;
+}
+
+[data-codex-rtl-root="true"] table[data-codex-rtl-table="true"] th,
+[data-codex-rtl-root="true"] table[data-codex-rtl-table="true"] td {
+  text-align: right;
+  unicode-bidi: plaintext;
+}
+
 [data-codex-rtl-root="true"] pre,
 [data-codex-rtl-root="true"] pre *,
 [data-codex-rtl-root="true"] pre [dir],
