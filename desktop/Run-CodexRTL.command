@@ -31,20 +31,40 @@ APP_NAME="$(basename "$APP" .app)"
 echo "Codex RTL Toolkit"
 echo "Using $APP"
 
-if pgrep -x "$APP_NAME" >/dev/null 2>&1; then
+# Consider the app "running" if the main process OR any Electron helper from the
+# bundle is alive, so a windowless/background instance is still detected.
+app_processes_running() {
+  pgrep -x "$APP_NAME" >/dev/null 2>&1 || pgrep -f "$APP/Contents/" >/dev/null 2>&1
+}
+
+if app_processes_running; then
   echo "Closing $APP_NAME so the debugging option is applied..."
+  # Ask the app to quit first (gracefully closes windows and helpers).
   osascript -e "tell application \"$APP_NAME\" to quit" >/dev/null 2>&1 || true
   for _ in {1..20}; do
-    pgrep -x "$APP_NAME" >/dev/null 2>&1 || break
+    app_processes_running || break
     sleep 0.25
   done
-  if pgrep -x "$APP_NAME" >/dev/null 2>&1; then
-    echo "$APP_NAME did not close. Quit it manually and run this launcher again."
+
+  # If a background or helper (Electron) process ignored the quit request, force
+  # the whole bundle down -- main process plus every helper running from the .app.
+  if app_processes_running; then
+    pkill -f "$APP/Contents/" >/dev/null 2>&1 || true
+    for _ in {1..20}; do
+      app_processes_running || break
+      sleep 0.25
+    done
+  fi
+
+  if app_processes_running; then
+    echo "$APP_NAME did not close. Quit it manually (including any background/helper processes) and run this launcher again."
     exit 1
   fi
 fi
 
-if [[ ! -d node_modules/ws ]]; then npm install --omit=dev; fi
+# npm ci keeps the install reproducible from the lockfile; --ignore-scripts skips
+# dependency lifecycle scripts; --omit=dev drops devDependencies not needed at runtime.
+if [[ ! -d node_modules/ws ]]; then npm ci --omit=dev --ignore-scripts; fi
 
 # --force-ui-direction=ltr keeps the native window chrome LTR on RTL OS locales
 # (see the Windows launcher note); RTL text direction is applied in the renderer.
